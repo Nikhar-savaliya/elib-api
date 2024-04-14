@@ -9,3 +9,5 @@
 7. setup dotenv
 8. setup mongoose
 9. setup global error handler
+<!-- starting api development -->
+10. setup user api end point
