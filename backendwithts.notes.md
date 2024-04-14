@@ -6,5 +6,6 @@
 4. add eslint
 5. add prettier
 6. setup express
-7. setup dotenv 
+7. setup dotenv
 8. setup mongoose
+9. setup global error handler
