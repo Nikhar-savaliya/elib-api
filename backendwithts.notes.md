@@ -7,3 +7,4 @@
 5. add prettier
 6. setup express
 7. setup dotenv 
+8. setup mongoose
