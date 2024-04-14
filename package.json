@@ -4,9 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon index.js"
   },
-  "author": "",
+  "author": "Nikhar Savaliya <nikhar663@gmail.com>",
   "license": "ISC",
   "devDependencies": {
     "@types/node": "^20.12.7",
