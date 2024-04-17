@@ -111,7 +111,17 @@ const updateBook = async (req: Request, res: Response, next: NextFunction) => {
       }
     );
     updatedCoverImageUrl = coverImageUploadResult.secure_url;
-    await fs.promises.unlink(coverImageFilePath);
+    try {
+      await fs.promises.unlink(coverImageFilePath);
+    } catch (error) {
+      console.log(error);
+      return next(
+        createHttpError(
+          500,
+          "error unlinking coverimage from public/data/uploads"
+        )
+      );
+    }
   }
 
   let updatedBookUrl = "";
@@ -133,7 +143,14 @@ const updateBook = async (req: Request, res: Response, next: NextFunction) => {
       }
     );
     updatedBookUrl = bookFileUploadResult.secure_url;
-    await fs.promises.unlink(bookFilePath);
+    try {
+      await fs.promises.unlink(bookFilePath);
+    } catch (error) {
+      console.log(error);
+      return next(
+        createHttpError(500, "error unlinking pdf from public/data/uploads")
+      );
+    }
   }
 
   const updatedBook = await bookModel.findOneAndUpdate(
@@ -201,12 +218,12 @@ const deleteBook = async (req: Request, res: Response, next: NextFunction) => {
   const coverImageSplits = book.coverImage.split("/");
   const coverImagePublicID =
     coverImageSplits.at(-2) + "/" + coverImageSplits.at(-1)?.split(".")[0];
-  console.log(coverImagePublicID);
+  // console.log(coverImagePublicID);
 
   // generate bookImage PublicId
   const bookFileSplits = book.file.split("/");
   const bookFilePublicID = bookFileSplits.at(-2) + "/" + bookFileSplits.at(-1);
-  console.log(bookFilePublicID);
+  // console.log(bookFilePublicID);
 
   try {
     await cloudinary.uploader.destroy(coverImagePublicID);

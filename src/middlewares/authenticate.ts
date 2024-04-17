@@ -20,7 +20,7 @@ const authenticate = (req: Request, res: Response, next: NextFunction) => {
     _req.userId = decoded.sub as string;
     next();
   } catch (error) {
-    return next(createHttpError(401, "token expired."));
+    return next(createHttpError(401, "invalid Token."));
   }
 };
 
