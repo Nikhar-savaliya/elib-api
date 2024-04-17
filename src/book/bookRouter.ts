@@ -3,6 +3,7 @@ import multer from "multer";
 
 import {
   createBook,
+  deleteBook,
   getSingleBook,
   listAllBooks,
   updateBook,
@@ -41,4 +42,6 @@ bookRouter.patch(
 bookRouter.get("/", listAllBooks);
 
 bookRouter.get("/:bookId", getSingleBook);
+
+bookRouter.delete("/:bookId", authenticate, deleteBook);
 export default bookRouter;
