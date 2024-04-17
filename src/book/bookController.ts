@@ -10,19 +10,23 @@ const createBook = async (req: Request, res: Response, next: NextFunction) => {
   const { title, genre } = req.body;
   try {
     const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+
     const coverImageMimeType = files.coverImage[0].mimetype.split("/").at(-1);
-    const fileName = files.coverImage[0].filename;
-    const filePath = path.resolve(
+    const coverImageFileName = files.coverImage[0].filename;
+    const coverImageFilePath = path.resolve(
       __dirname,
       "../../public/data/uploads",
-      fileName
+      coverImageFileName
     );
 
-    const uploadResult = await cloudinary.uploader.upload(filePath, {
-      filename_override: fileName,
-      folder: "book-covers",
-      format: coverImageMimeType,
-    });
+    const coverImageUploadResult = await cloudinary.uploader.upload(
+      coverImageFilePath,
+      {
+        filename_override: coverImageFileName,
+        folder: "book-covers",
+        format: coverImageMimeType,
+      }
+    );
 
     const bookFilename = files.file[0].filename;
     const bookFilePath = path.resolve(
@@ -45,13 +49,13 @@ const createBook = async (req: Request, res: Response, next: NextFunction) => {
       title,
       genre,
       author: "661b72a1ff65d9c67f7618dc",
-      coverImage: uploadResult.secure_url,
+      coverImage: coverImageUploadResult.secure_url,
       file: bookFileUploadResult.secure_url,
     });
 
     // delete files from public/data/uploads
     try {
-      await fs.promises.unlink(filePath);
+      await fs.promises.unlink(coverImageFilePath);
       await fs.promises.unlink(bookFilePath);
     } catch (error) {
       console.log(error);
@@ -60,7 +64,7 @@ const createBook = async (req: Request, res: Response, next: NextFunction) => {
       );
     }
 
-    return res.json({ bookFileUploadResult, uploadResult });
+    return res.json({ bookFileUploadResult, coverImageUploadResult });
   } catch (error) {
     console.log(error);
     return next(createHttpError(500, "error in saving the book in database"));
