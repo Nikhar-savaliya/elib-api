@@ -1,0 +1,2 @@
+-- in updaate book api 
+    while updating pdf and cover image in database, cloudinary still stores old files, write logic to delete that file
