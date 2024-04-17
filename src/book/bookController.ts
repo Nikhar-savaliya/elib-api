@@ -68,7 +68,7 @@ const createBook = async (req: Request, res: Response, next: NextFunction) => {
       );
     }
 
-    return res.json({ bookFileUploadResult, coverImageUploadResult });
+    return res.json({ id: newBook._id });
   } catch (error) {
     console.log(error);
     return next(createHttpError(500, "error in saving the book in database"));
