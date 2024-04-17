@@ -149,4 +149,18 @@ const updateBook = async (req: Request, res: Response, next: NextFunction) => {
   res.json(updatedBook);
 };
 
-export { createBook, updateBook };
+const listAllBooks = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    // TODO : add paggination ( mongoose paggination )
+    const books = await bookModel.find();
+    res.json(books);
+  } catch (error) {
+    return next(createHttpError(500, "error while getting all book"));
+  }
+};
+
+export { createBook, updateBook, listAllBooks };
