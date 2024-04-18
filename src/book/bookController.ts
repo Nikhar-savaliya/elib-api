@@ -7,8 +7,8 @@ import fs from "node:fs";
 import { AuthRequest } from "../middlewares/authenticate";
 
 const createBook = async (req: Request, res: Response, next: NextFunction) => {
-  // console.log(req.files);
-  const { title, genre } = req.body;
+  console.log(req.files);
+  const { title, genre, description } = req.body;
 
   try {
     const files = req.files as { [fieldname: string]: Express.Multer.File[] };
@@ -52,6 +52,7 @@ const createBook = async (req: Request, res: Response, next: NextFunction) => {
     const newBook = await bookModel.create({
       title,
       genre,
+      description,
       author: _req.userId,
       coverImage: coverImageUploadResult.secure_url,
       file: bookFileUploadResult.secure_url,
@@ -76,7 +77,7 @@ const createBook = async (req: Request, res: Response, next: NextFunction) => {
 };
 
 const updateBook = async (req: Request, res: Response, next: NextFunction) => {
-  const { title, genre } = req.body;
+  const { title, genre, description } = req.body;
   const bookId = req.params.bookId;
 
   const book = await bookModel.findOne({ _id: bookId });
@@ -86,7 +87,7 @@ const updateBook = async (req: Request, res: Response, next: NextFunction) => {
   }
   // check access
   const _req = req as AuthRequest;
-  if (book.author.toString() !== _req.userId) {
+  if (book.author._id.toString() !== _req.userId) {
     return next(createHttpError(403, "Unauthorized Request"));
   }
 
@@ -111,6 +112,7 @@ const updateBook = async (req: Request, res: Response, next: NextFunction) => {
       }
     );
     updatedCoverImageUrl = coverImageUploadResult.secure_url;
+
     try {
       await fs.promises.unlink(coverImageFilePath);
     } catch (error) {
@@ -121,6 +123,16 @@ const updateBook = async (req: Request, res: Response, next: NextFunction) => {
           "error unlinking coverimage from public/data/uploads"
         )
       );
+    }
+
+    // generate coverImage PublicId and delete from cloudinary
+    const coverImageSplits = book.coverImage.split("/");
+    const coverImagePublicID =
+      coverImageSplits.at(-2) + "/" + coverImageSplits.at(-1)?.split(".")[0];
+    try {
+      await cloudinary.uploader.destroy(coverImagePublicID);
+    } catch (error) {
+      return next(createHttpError(500, "cloudinary file deletion failed"));
     }
   }
 
@@ -151,13 +163,28 @@ const updateBook = async (req: Request, res: Response, next: NextFunction) => {
         createHttpError(500, "error unlinking pdf from public/data/uploads")
       );
     }
+
+    // generate bookImage PublicId and delete from cloudinary
+    const bookFileSplits = book.file.split("/");
+    const bookFilePublicID =
+      bookFileSplits.at(-2) + "/" + bookFileSplits.at(-1);
+    // console.log(bookFilePublicID);
+
+    try {
+      await cloudinary.uploader.destroy(bookFilePublicID, {
+        resource_type: "raw",
+      });
+    } catch (error) {
+      return next(createHttpError(500, "cloudinary file deletion failed"));
+    }
   }
 
   const updatedBook = await bookModel.findOneAndUpdate(
     { _id: bookId },
     {
-      title: title,
-      genre: genre,
+      title,
+      genre,
+      description,
       coverImage: updatedCoverImageUrl ? updatedCoverImageUrl : book.coverImage,
       file: updatedBookUrl ? updatedBookUrl : book.file,
     },
@@ -174,7 +201,7 @@ const listAllBooks = async (
 ) => {
   try {
     // TODO : add paggination ( mongoose paggination )
-    const books = await bookModel.find();
+    const books = await bookModel.find().populate("author", "name email");
     res.json(books);
   } catch (error) {
     return next(createHttpError(500, "error while getting all book"));
@@ -188,14 +215,18 @@ const getSingleBook = async (
 ) => {
   const bookId = req.params.bookId;
   try {
-    const book = await bookModel.findOne({ _id: bookId });
+    const book = await bookModel
+      .findOne({ _id: bookId })
+      .populate("author", "name email");
     if (!book) {
       return next(createHttpError(404, "Book not found"));
     }
 
     res.json(book);
   } catch (error) {
-    return next(createHttpError(500, "error while getting a single book"));
+    return next(
+      createHttpError(500, "error while getting a single book" + error)
+    );
   }
 };
 
@@ -208,7 +239,7 @@ const deleteBook = async (req: Request, res: Response, next: NextFunction) => {
 
   // check access
   const _req = req as AuthRequest;
-  if (book.author.toString() !== _req.userId) {
+  if (book.author._id.toString() !== _req.userId) {
     return next(createHttpError(403, "Unauthorized Request"));
   }
 

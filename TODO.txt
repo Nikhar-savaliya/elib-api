@@ -1,4 +1,0 @@
-1)  in updaate book api 
-    - while updating pdf and cover image in database, cloudinary still stores old files, write logic to delete that file
-2) in getAllBook and getSingleBook
-    - instead of adding authorId to author filed, add author Name,
