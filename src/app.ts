@@ -17,7 +17,7 @@ app.use(express.json());
 
 // routes
 app.get("/", (req, res, next) => {
-  return res.json({ message: "hello world" });
+  return res.json({ message: "Welcome tho Elib API ⚒️" });
 });
 
 app.use("/api/users", userRouter);
