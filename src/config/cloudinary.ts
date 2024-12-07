@@ -8,9 +8,3 @@ cloudinary.config({
 });
 
 export default cloudinary;
-
-cloudinary.config({
-  cloud_name: "ddlyhfxjz",
-  api_key: "183123974945664",
-  api_secret: "47tM316SiB0ktex_0S-mXESwVWw",
-});
